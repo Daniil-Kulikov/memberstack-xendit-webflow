@@ -1,6 +1,5 @@
-// Added CORS fix on April 4
 export default async function handler(req, res) {
-  // ✅ CORS headers
+  // ✅ CORS HEADERS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -9,14 +8,23 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // ✅ Далі йде основна логіка
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
   const { memberstackId, plan, email } = req.body;
 
   if (!memberstackId || !plan) {
     return res.status(400).json({ error: "Missing memberstackId or plan" });
   }
 
-  // 💵 планування ціни
+  console.log("📦 Creating invoice for:", {
+    memberstackId,
+    plan,
+    email: email || "No email provided",
+  });
+
+  // 💰 Define plan prices (in cents)
   const planPrices = {
     silver: 59900,
     gold: 79900,
