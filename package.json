@@ -1,0 +1,25 @@
+{
+  "name": "memberstack-xendit-webflow",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build step needed'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Daniil-Kulikov/memberstack-xendit-webflow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Daniil-Kulikov/memberstack-xendit-webflow/issues"
+  },
+  "homepage": "https://github.com/Daniil-Kulikov/memberstack-xendit-webflow#readme",
+  "dependencies": {
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7"
+  }
+}
