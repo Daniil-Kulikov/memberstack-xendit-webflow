@@ -47,7 +47,7 @@ export default async function handler(req, res) {
           external_id: `memberstack-${memberstackId}-${Date.now()}`,
           amount,
           description: `Payment for ${plan} package`,
-          currency: "USD",
+          currency: "IDR",
           customer: {
             reference_id: memberstackId,
             email: email || undefined,
