@@ -52,7 +52,7 @@ export default async function handler(req, res) {
           reference_id: memberstackId,
           email: email || undefined,
         },
-        success_redirect_url: "https://crewstagingsite.webflow.io/success",
+        success_redirect_url: "https://crewstagingsite.webflow.io/memberstack/profile",
         failure_redirect_url: "https://crewstagingsite.webflow.io/failed",
       }),
     });
