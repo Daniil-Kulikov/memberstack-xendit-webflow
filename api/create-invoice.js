@@ -64,6 +64,23 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: "Xendit error", details: data });
     }
 
+    // ✅ Assign plan via Memberstack API
+    try {
+      await fetch(`${req.headers.origin}/api/assign-plan`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          memberstackId,
+          plan,
+        }),
+      });
+      console.log("✅ Plan assignment request sent");
+    } catch (assignErr) {
+      console.error("❌ Failed to call assign-plan:", assignErr);
+    }
+
     return res.status(200).json({ invoice_url: data.invoice_url });
   } catch (error) {
     console.error("❌ Server error:", error);
