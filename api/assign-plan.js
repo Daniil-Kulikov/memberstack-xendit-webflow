@@ -35,8 +35,8 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 🧾 Лог для дебагу
     console.log("📨 Memberstack API response:", data);
+    console.log("🛠 Assigning plan:", { memberstackId, plan, planId });
 
     if (!response.ok) {
       console.error("❌ Failed to update member:", data);
