@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  // ✅ CORS HEADERS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -12,6 +13,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing memberstackId or plan" });
   }
 
+  // 🎯 Map readable plan name to Memberstack planId
   const planMap = {
     silver: "pln_silver-package-4xes0nt7",
     gold: "pln_gold-package-m0ew0nki",
@@ -23,8 +25,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid plan name", plan });
   }
 
-  console.log("🛠 Assigning plan:", { memberstackId, plan, planId });
-
   try {
     const response = await fetch(`https://admin.memberstack.com/members/${memberstackId}`, {
       method: "PATCH",
@@ -32,11 +32,14 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.MEMBERSTACK_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ planId: [planId] }), // саме масив
+      body: JSON.stringify({ planId: [planId] }), // 👈 array format
     });
 
     const data = await response.json();
+
+    // 🧾 Log full response from Memberstack API
     console.log("📨 Memberstack API response:", data);
+    console.log("🛠 Assigning plan:", { memberstackId, plan, planId });
 
     if (!response.ok) {
       console.error("❌ Failed to update member:", data);
