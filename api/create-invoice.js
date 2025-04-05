@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // ✅ CORS HEADERS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -24,11 +23,10 @@ export default async function handler(req, res) {
     email: email || "No email provided",
   });
 
-  // 💸 Plan pricing in PHP (₱), in centavos (PHP x 100)
   const planPrices = {
-    silver: 59900,   // ₱599.00
-    gold: 79900,     // ₱799.00
-    platinum: 99900, // ₱999.00
+    silver: 59900,
+    gold: 79900,
+    platinum: 99900,
   };
 
   const amount = planPrices[plan.toLowerCase()];
@@ -46,13 +44,13 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         external_id: `memberstack-${memberstackId}-${Date.now()}`,
         amount,
-        currency: "PHP", // ✅ SET TO PHP
+        currency: "PHP",
         description: `Payment for ${plan} package`,
         customer: {
           reference_id: memberstackId,
           email: email || undefined,
         },
-        success_redirect_url: "https://crewstagingsite.webflow.io/success",
+        success_redirect_url: `https://crewstagingsite.webflow.io/memberstack/profile?plan=${plan}`,
         failure_redirect_url: "https://crewstagingsite.webflow.io/failed",
       }),
     });
