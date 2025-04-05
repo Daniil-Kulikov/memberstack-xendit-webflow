@@ -18,16 +18,17 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing memberstackId or plan" });
   }
 
-  console.log("🧾 Creating invoice for:", {
+  console.log("📦 Creating invoice for:", {
     memberstackId,
     plan,
     email: email || "No email provided",
   });
 
+  // 💸 Plan pricing in PHP (₱), in centavos (PHP x 100)
   const planPrices = {
-    silver: 59900,
-    gold: 79900,
-    platinum: 99900,
+    silver: 59900,   // ₱599.00
+    gold: 79900,     // ₱799.00
+    platinum: 99900, // ₱999.00
   };
 
   const amount = planPrices[plan.toLowerCase()];
@@ -36,62 +37,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    const xenditRes = await fetch("https://api.xendit.co/v2/invoices", {
+    const response = await fetch("https://api.xendit.co/v2/invoices", {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(process.env.XENDIT_API_KEY + ":").toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString("base64")}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        external_id: `${memberstackId}-${Date.now()}`,
-        payer_email: email,
-        description: `Crew Package: ${plan}`,
+        external_id: `memberstack-${memberstackId}-${Date.now()}`,
         amount,
-        success_redirect_url: `https://crewstagingsite.webflow.io/memberstack/profile?plan=${plan}`,
+        currency: "PHP", // ✅ SET TO PHP
+        description: `Payment for ${plan} package`,
+        customer: {
+          reference_id: memberstackId,
+          email: email || undefined,
+        },
+        success_redirect_url: "https://crewstagingsite.webflow.io/success",
+        failure_redirect_url: "https://crewstagingsite.webflow.io/failed",
       }),
     });
 
-    const invoice = await xenditRes.json();
+    const data = await response.json();
 
-    if (!xenditRes.ok) {
-      return res.status(400).json({ error: "Xendit error", details: invoice });
+    if (!response.ok) {
+      console.error("❌ Xendit error:", data);
+      return res.status(response.status).json({ error: "Xendit error", details: data });
     }
 
-    // 🔐 Assign plan in Memberstack
-    const planMap = {
-      silver: "pln_silver-package-4xes0nt7",
-      gold: "pln_gold-package-m0ew0nki",
-      platinum: "pln_platinum-package-syfk0xac",
-    };
-
-    const memberstackPlanId = planMap[plan.toLowerCase()];
-    if (memberstackPlanId) {
-      try {
-        const assign = await fetch(`https://admin.memberstack.com/members/${memberstackId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.MEMBERSTACK_API_KEY}`,
-          },
-          body: JSON.stringify({
-            planId: memberstackPlanId,
-          }),
-        });
-
-        if (assign.ok) {
-          console.log("✅ Plan assigned in Memberstack");
-        } else {
-          const err = await assign.json();
-          console.error("❌ Failed to assign plan:", err);
-        }
-      } catch (err) {
-        console.error("❌ Memberstack API error:", err);
-      }
-    }
-
-    return res.status(200).json({ invoice_url: invoice.invoice_url });
-  } catch (err) {
-    console.error("❌ Server error:", err);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(200).json({ invoice_url: data.invoice_url });
+  } catch (error) {
+    console.error("❌ Server error:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 }
