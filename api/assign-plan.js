@@ -23,6 +23,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid plan name", plan });
   }
 
+  console.log("🛠 Assigning plan:", { memberstackId, plan, planId });
+
   try {
     const response = await fetch(`https://admin.memberstack.com/members/${memberstackId}`, {
       method: "PATCH",
@@ -30,15 +32,14 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.MEMBERSTACK_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ planId: [planId] }),
+      body: JSON.stringify({ planId: [planId] }), // саме масив
     });
 
     const data = await response.json();
-
     console.log("📨 Memberstack API response:", data);
 
     if (!response.ok) {
-      console.error("❌ Memberstack error:", data);
+      console.error("❌ Failed to update member:", data);
       return res.status(response.status).json({ error: "Failed to update member", details: data });
     }
 
