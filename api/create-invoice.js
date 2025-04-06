@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+async function handler(req, res) {
   // ✅ CORS HEADERS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -84,3 +84,21 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          memberstackId,
+          plan,
+        }),
+      });
+      console.log("✅ Plan assignment request sent");
+    } catch (assignErr) {
+      console.error("❌ Failed to call assign-plan:", assignErr);
+    }
+
+    return res.status(200).json({ invoice_url: data.invoice_url });
+  } catch (error) {
+    console.error("❌ Server error:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
+// ✅ CommonJS експорт
+module.exports = handler;
