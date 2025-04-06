@@ -26,9 +26,9 @@ export default async function handler(req, res) {
 
   // 💸 Plan pricing in PHP (₱), in centavos (PHP x 100)
   const planPrices = {
-    silver: 59900,   // ₱599.00
-    gold: 79900,     // ₱799.00
-    platinum: 99900, // ₱999.00
+    silver: 59900,
+    gold: 79900,
+    platinum: 99900,
   };
 
   const amount = planPrices[plan.toLowerCase()];
@@ -40,13 +40,13 @@ export default async function handler(req, res) {
     const response = await fetch("https://api.xendit.co/v2/invoices", {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`${process.env.XENDIT_API_KEY}:`).toString("base64")}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        external_id: `memberstack-${memberstackId}-${Date.now()}`,
+        external_id: `memberstack-${memberstackId}-${plan.toLowerCase()}`,
         amount,
-        currency: "PHP", // ✅ SET TO PHP
+        currency: "PHP",
         description: `Payment for ${plan} package`,
         customer: {
           reference_id: memberstackId,
