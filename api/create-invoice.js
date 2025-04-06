@@ -37,10 +37,12 @@ export default async function handler(req, res) {
   }
 
   try {
+    const xenditApiKey = process.env.XENDIT_API_KEY;
+
     const response = await fetch("https://api.xendit.co/v2/invoices", {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(`${process.env.XENDIT_API_KEY}:`).toString("base64")}`,
+        Authorization: `Basic ${Buffer.from(`${xenditApiKey}:`).toString("base64")}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
