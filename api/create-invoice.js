@@ -39,7 +39,14 @@ export default async function handler(req, res) {
   try {
     const xenditSecretKey = process.env.XENDIT_API_KEY;
 
-    // 🔐 Формуємо правильний Authorization
+    // 🧪 DEBUG LOG: Перевірка чи є ключ
+    if (!xenditSecretKey) {
+      console.error("🚨 XENDIT_API_KEY is MISSING in process.env");
+      return res.status(500).json({ error: "Missing Xendit API key" });
+    } else {
+      console.log("🔐 XENDIT_API_KEY starts with:", xenditSecretKey.slice(0, 12));
+    }
+
     const encodedKey = Buffer.from(`${xenditSecretKey}:`).toString("base64");
 
     const response = await fetch("https://api.xendit.co/v2/invoices", {
@@ -77,18 +84,3 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          memberstackId,
-          plan,
-        }),
-      });
-      console.log("✅ Plan assignment request sent");
-    } catch (assignErr) {
-      console.error("❌ Failed to call assign-plan:", assignErr);
-    }
-
-    return res.status(200).json({ invoice_url: data.invoice_url });
-  } catch (error) {
-    console.error("❌ Server error:", error);
-    return res.status(500).json({ error: "Server error" });
-  }
-}
