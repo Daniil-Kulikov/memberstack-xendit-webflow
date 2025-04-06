@@ -37,12 +37,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const xenditApiKey = process.env.XENDIT_API_KEY;
+    const xenditSecretKey = process.env.XENDIT_API_KEY;
+
+    // 🔐 Формуємо правильний Authorization
+    const encodedKey = Buffer.from(`${xenditSecretKey}:`).toString("base64");
 
     const response = await fetch("https://api.xendit.co/v2/invoices", {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(`${xenditApiKey}:`).toString("base64")}`,
+        Authorization: `Basic ${encodedKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
