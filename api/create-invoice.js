@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing memberstackId or plan" });
   }
 
-  console.log("📦 Creating invoice for:", { memberstackId, plan, email: email || "No email" });
+  console.log("📦 Creating invoice for:", { memberstackId, plan, email: email || "No email provided" });
 
   try {
     // 🧠 Step 1: Fetch plan info from Webflow CMS
@@ -27,19 +27,27 @@ export default async function handler(req, res) {
     });
 
     const cmsData = await cmsResponse.json();
-    const found = cmsData.items.find((item) => item.slug.toLowerCase() === plan.toLowerCase());
+
+    if (!cmsData.items || !Array.isArray(cmsData.items)) {
+      console.error("❌ Invalid CMS response:", cmsData);
+      return res.status(500).json({ error: "Webflow CMS error", details: cmsData });
+    }
+
+    const found = cmsData.items.find(
+      (item) => item.slug.toLowerCase() === plan.toLowerCase()
+    );
 
     if (!found) {
       console.error("❌ Plan not found in CMS:", plan);
       return res.status(400).json({ error: "Plan not found in Webflow CMS" });
     }
 
-    const amount = found.price * 100; // 💸 price → must be in centavos
-    console.log("✅ Plan found in CMS:", { name: found.name, price: amount });
+    const amount = found.price * 100; // 💸 Webflow CMS price → centavos
+    console.log("✅ CMS plan found:", { slug: found.slug, amount });
 
     // 🧾 Step 2: Create invoice in Xendit
-    const xenditSecretKey = process.env.XENDIT_API_KEY;
-    const encodedKey = Buffer.from(`${xenditSecretKey}:`).toString("base64");
+    const xenditKey = process.env.XENDIT_API_KEY;
+    const encodedKey = Buffer.from(`${xenditKey}:`).toString("base64");
 
     const xenditResponse = await fetch("https://api.xendit.co/v2/invoices", {
       method: "POST",
@@ -68,21 +76,21 @@ export default async function handler(req, res) {
       return res.status(xenditResponse.status).json({ error: "Xendit error", details: invoiceData });
     }
 
-    // 🔁 Optional: Assign plan immediately
+    // 🔁 Assign plan
     try {
       await fetch(`${req.headers.origin}/api/assign-plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ memberstackId, plan }),
       });
-      console.log("✅ Plan assignment request sent");
-    } catch (err) {
-      console.warn("⚠️ Assign plan failed (but not critical):", err.message);
+      console.log("✅ Plan assignment triggered");
+    } catch (assignErr) {
+      console.warn("⚠️ Assign plan failed (not critical):", assignErr.message);
     }
 
     return res.status(200).json({ invoice_url: invoiceData.invoice_url });
-  } catch (error) {
-    console.error("❌ Server error:", error);
+  } catch (err) {
+    console.error("❌ Server error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 }
