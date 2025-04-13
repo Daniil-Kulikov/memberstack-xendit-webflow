@@ -30,7 +30,12 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.MEMBERSTACK_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ planId: [planId] }),
+      body: JSON.stringify({
+        planId: [planId],
+        customFields: {
+          planName: plan.charAt(0).toUpperCase() + plan.slice(1), // записуємо "Gold", "Platinum" і т.д.
+        },
+      }),
     });
 
     const data = await response.json();
